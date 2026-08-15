@@ -60,7 +60,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#define ENABLE_DEBUG
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

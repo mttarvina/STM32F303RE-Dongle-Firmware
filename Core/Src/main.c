@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "gpio.h"
+#include "stm32f3xx_ll_gpio.h"
 #include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -98,8 +99,14 @@ int main(void) {
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  /* USER CODE BEGIN 2 */
 
+  /* USER CODE BEGIN 2 */
+  LL_GPIO_InitTypeDef user_led2 = {.Pin = LL_GPIO_PIN_5,
+                                   .Mode = LL_GPIO_MODE_OUTPUT,
+                                   .OutputType = LL_GPIO_OUTPUT_PUSHPULL,
+                                   .Speed = LL_GPIO_SPEED_FREQ_MEDIUM};
+
+  LL_GPIO_Init(GPIOA, &user_led2);
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -1,24 +1,25 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    usart.c
-  * @brief   This file provides code for the configuration
-  *          of the USART instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    usart.c
+ * @brief   This file provides code for the configuration
+ *          of the USART instances.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2026 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
+#include "stm32f3xx_ll_usart.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -26,8 +27,7 @@
 
 /* USART2 init function */
 
-void MX_USART2_UART_Init(void)
-{
+void MX_USART2_UART_Init(void) {
 
   /* USER CODE BEGIN USART2_Init 0 */
 
@@ -45,7 +45,7 @@ void MX_USART2_UART_Init(void)
   PA2   ------> USART2_TX
   PA3   ------> USART2_RX
   */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_2|LL_GPIO_PIN_3;
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_2 | LL_GPIO_PIN_3;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
@@ -54,7 +54,8 @@ void MX_USART2_UART_Init(void)
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USART2 interrupt Init */
-  NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_SetPriority(USART2_IRQn,
+                   NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
   NVIC_EnableIRQ(USART2_IRQn);
 
   /* USER CODE BEGIN USART2_Init 1 */
@@ -72,12 +73,11 @@ void MX_USART2_UART_Init(void)
   LL_USART_ConfigAsyncMode(USART2);
   LL_USART_Enable(USART2);
   /* USER CODE BEGIN USART2_Init 2 */
-
+  LL_USART_EnableIT_RXNE(USART2); // Added to enable interrupt when receiving
+                                  // a character/byte
   /* USER CODE END USART2_Init 2 */
-
 }
 
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-

@@ -26,7 +26,7 @@ extern "C" {
  * @brief   Send each character of the array to USART2 TX one by one
  *
  * @param   str - pointer to char array
- * @param   num_bytes - number of bytes to be sent
+ * @param   num_bytes - number of bytes/characters to be sent
  * @retval  None
  */
 void USART2_SendMessage(const char *str, uint16_t num_bytes);
