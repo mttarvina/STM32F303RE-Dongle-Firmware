@@ -1,0 +1,30 @@
+[
+  {
+    "label": "CMake: Configure",
+    "command": "cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=./cmake/gcc-arm-none-eabi.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Link: Compile Commands",
+    "command": "ln -sf build/compile_commands.json compile_commands.json",
+    "use_new_terminal": false,
+  },
+  {
+    "label": "Build",
+    "command": "cmake --build build",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Clean",
+    "command": "rm -rf build",
+    "use_new_terminal": false
+  },
+  {
+    "label": "Flash MCU",
+    "command": "STM32_Programmer_CLI -c port=SWD mode=UR -w build/*.elf -v -rst",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  }
+]
