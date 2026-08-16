@@ -11,8 +11,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-/* Exported macros
- * ------------------------------------------------------------*/
+/* Exported macros -----------------------------------------------------------*/
 #define USART2_SERIAL_BUF_SIZE 512
 #define USART2_SERIAL_BUF_MASK (USART2_SERIAL_BUF_SIZE - 1)
 
@@ -22,6 +21,8 @@ typedef struct {
   volatile uint16_t head;
   volatile uint16_t tail;
 } RingBuf_TypeDef;
+
+/* Exported variables --------------------------------------------------------*/
 
 /* Exported functions prototypes ---------------------------------------------*/
 /**

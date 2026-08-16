@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tarvs_usart2.h"
+#include "tarvs_cmd.h"
 #include <stdint.h>
 #include <stdio.h>
 /* USER CODE END Includes */
@@ -73,6 +74,8 @@ int main(void) {
   char usart2_rx_msg[USART2_SERIAL_BUF_SIZE] = {0};
   uint16_t usart2_tx_bytes = 0;
   uint16_t usart2_rx_bytes = 0;
+
+  CMD_StructDef serial_cmd;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -119,8 +122,27 @@ int main(void) {
   while (1) {
     if (USART2_IsDataAvailable()) {
       usart2_rx_bytes = USART2_ReadMessage(usart2_rx_msg, USART2_SERIAL_BUF_SIZE);
-      usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, ":CMD=%s\r\n", usart2_rx_msg);
-      USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
+
+      #ifdef ENABLE_DEBUG
+        usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, "String=%s\r\n", usart2_rx_msg);
+        USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
+      #endif
+
+      bool valid_cmd = CMD_Parse(usart2_rx_msg, &serial_cmd, usart2_rx_bytes);
+      if (valid_cmd) {
+        uint16_t argA = CMD_ArgToInt(serial_cmd.argA);
+        uint16_t argB = CMD_ArgToInt(serial_cmd.argB);
+
+        #ifdef ENABLE_DEBUG
+          usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, ":CMD=%d;SUBJ=%d;PARAM=%d;ArgA=%d;ArgB=%d\r\n", serial_cmd.action, serial_cmd.subject, serial_cmd.param, argA, argB);
+          USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
+        #endif
+
+      }
+      else {
+        usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, ":CMD=?\r\n");
+        USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
+      }
     }
     LL_mDelay(10); // Important: Prevents incomplete capture of longer commands
     /* USER CODE END WHILE */
