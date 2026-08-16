@@ -20,11 +20,13 @@
 #include "main.h"
 #include "gpio.h"
 #include "stm32f3xx_ll_gpio.h"
+#include "stm32f3xx_ll_utils.h"
 #include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tarvs_usart2.h"
+#include <stdint.h>
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -68,7 +70,9 @@ int main(void) {
 
   /* USER CODE BEGIN 1 */
   char usart2_tx_msg[USART2_SERIAL_BUF_SIZE] = {0};
+  char usart2_rx_msg[USART2_SERIAL_BUF_SIZE] = {0};
   uint16_t usart2_tx_bytes = 0;
+  uint16_t usart2_rx_bytes = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -107,17 +111,18 @@ int main(void) {
                                    .Speed = LL_GPIO_SPEED_FREQ_MEDIUM};
 
   LL_GPIO_Init(GPIOA, &user_led2);
+  USART2_ResetRXBuffer();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint16_t count = 0;
   while (1) {
-    usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE,
-                               "Hello World - %d\r\n", count);
-    USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
-    count++;
-    LL_mDelay(1000);
+    if (USART2_IsDataAvailable()) {
+      usart2_rx_bytes = USART2_ReadMessage(usart2_rx_msg, USART2_SERIAL_BUF_SIZE);
+      usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, ":CMD=%s\r\n", usart2_rx_msg);
+      USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
+    }
+    LL_mDelay(10); // Important: Prevents incomplete capture of longer commands
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

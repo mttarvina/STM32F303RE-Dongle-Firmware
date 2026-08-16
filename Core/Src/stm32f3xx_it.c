@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "main.h"
+#include "tarvs_usart2.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -198,8 +199,8 @@ void USART2_IRQHandler(void) {
   LL_GPIO_TogglePin(GPIOA, LL_GPIO_PIN_5);
 #endif
 
-  if (LL_USART_IsActiveFlag_RXNE(USART2)) {
-    uint8_t char_data = LL_USART_ReceiveData8(USART2);
+  if (LL_USART_IsActiveFlag_RXNE(USART2) && LL_USART_IsEnabledIT_RXNE(USART2)) {
+    USART2_AppendToRXBuffer(LL_USART_ReceiveData8(USART2));
   }
   /* USER CODE END USART2_IRQn 0 */
   /* USER CODE BEGIN USART2_IRQn 1 */

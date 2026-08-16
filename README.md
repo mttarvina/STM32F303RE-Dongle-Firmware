@@ -12,12 +12,12 @@ This project aims to develop a custom dongle firmware for STM32F303RE micrcontro
 This project aims to showcase my capability in developing custom bare metal embedded C firmware on an STM32 microcontroller.
 
 My setup in developing this project is composed of:
-- STM32CubeMX: for initial MCU configuration and setup code generation using HAL/LL libraries
-- SMT32CubeCLT + CMake: for compiling and uploading the binary to the actual MCU hardware
-- Zed Code Editor: firmware code development
+- STM32CubeMX - for initial MCU configuration and code generation using HAL/LL libraries
+- SMT32CubeCLT + CMake - for compiling, debugging, and uploading the firmware binary to the MCU
+- Zed Code Editor - firmware code development
 
 ## Hardware Description
-This firmware was tested and developed primarily on the official Nucleo-F303RE development board.
+This firmware was tested and developed primarily for the Nucleo-F303RE development board.
 Board Revision: MB1136 RevC-04
 
 Main References:
@@ -72,7 +72,7 @@ STM32CubeMX Config Settings:
 - Mode = Asynchronous
 - Hardware Flow Control (RS232) = Disabled
 - Hardware Flow Control (RS485) = Disabled
-- Baud Rate = 115200
+- Baud Rate = 230400
 - Word Length = 8bits
 - Parity = None
 - Stop Bits = 1
