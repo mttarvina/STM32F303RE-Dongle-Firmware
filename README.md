@@ -80,35 +80,41 @@ STM32CubeMX Config Settings:
 - Oversampling = 8 samples
 - USART2 Global Interrupt (NVIC) = Enabled
 
+### GPIO
+By default, all GPIO pins are configured as analog inputs. Each GPIO can be configured and controlled via the serial command API.
+
 ## Serial Command API
 This section describes the "language" of communication between the MCU and any high level software application connected through the USB interface.
 
-### Sending Commands
+### Command Structure
 The MCU accepts a formatted command composed of a fized array of 12 bytes. The format is described as follows:
 
-CMD = ['action', 'subject', 'param/attr', 'argA3', 'argA2', 'argA1', 'argA0', 'argB3', 'argB2', 'argB1', 'argB0', '!']
+```cmd
+['action', 'subject', 'param/attr', 'argA3', 'argA2', 'argA1', 'argA0', 'argB3', 'argB2', 'argB1', 'argB0', '!']
+```
 
 This was designed so that the a command roughly translates to a comprehensible english statement such as "SET the GPIO at port GPIOA pins 5 & 6 to HIGH" where:
 - SET represents the "action"
 - GPIO represents the "subject"
-- port GPIOA represents the "param/attr"
-- pins 5 & 6 represents the value for "argA"
-- the state HIGH represent the value for "argB"
+- Port GPIOA represents the "param/attr"
+- Pins 5 & 6 represents the value for "argA"
+- State HIGH represent the value for "argB"
 
-The two arguments: "argA" and "argB" depends on the combination of the first three command bytes and are documented in the later sections for each of the supported peripherals. Each argument has a 4-byte allocation and will represent a 16-bit integer when parsed by the MCU (see Command Arguments Section).
+The two arguments: "argA" and "argB" depends on the combination of the first three command bytes and are documented in the later sections for each of the supported peripherals. Each argument has a 4-byte allocation and can sometimes represent a 16-bit integer depending on the intended command.
 
 The last byte "!" signals the end of the command and is required for the MCU to recognize the command as valid. 
 
 #### Command Actions
 The first byte of the valid command represents the intended "action" and has the following options:
-| Action  | Char Representation | Integer Equivalent |
-|---------|---------------------|--------------------|
-| GET     | '0'                 | 48                 |
-| SET     | '1'                 | 49                 |
-| TOGGLE  | '2'                 | 50                 |
-| START   | '3'                 | 51                 |
-| STOP    | '4'                 | 52                 |
-| CAPTURE | '5'                 | 53                 |
+| Action   | Char Representation | Integer Equivalent |
+|----------|---------------------|--------------------|
+| GET      | '0'                 | 48                 |
+| SET      | '1'                 | 49                 |
+| TOGGLE   | '2'                 | 50                 |
+| START    | '3'                 | 51                 |
+| STOP     | '4'                 | 52                 |
+| CAPTURE  | '5'                 | 53                 |
+| CONFIG   | '6'                 | 54                 |
 
 #### Command Subject
 The second byte represents the peripheral acting as the "subject" in which the "action" is intended for. It has the following options:
@@ -120,7 +126,34 @@ The second byte represents the peripheral acting as the "subject" in which the "
 | SPI      | '3'                 | 51                 |
 | TIMER    | '4'                 | 52                 |
 | PWM      | '5'                 | 53                 |
-| SEQUENCE | '6'                 | 54                 |
+
+### GPIO Commands
+The next sections outline the list of supported commands for controlling and configuring any GPIO pins that are present in the actual Nucleo-F303RE board.
+
+#### Configuring a GPIO pin
+Configuring a GPIO is done via the CONFIG command and has the following format:
+| Action | Subject | Param/Attr  | Argument A (4-bytes) | Argument B (4-bytes)        |
+|--------|---------|-------------|----------------------|-----------------------------|
+| CONFIG | GPIO    | *gpio_port* | *gpio_pin_mask*      | mode|speed|output_type|pull |
+
+##### GPIO Port Options
+This represents the 'param/attr' byte of the command. The valid options are listed below:
+- GPIOA = '0'
+- GPIOB = '1'
+- GPIOC = '2'
+- GPIOD = '3'
+- GPIOE = '4'
+- GPIOF = '5'
+
+##### GPIO Pin Mask
+This is a 4-byte integer that represents the locations of the target GPIO pins and represents the Argument A of the command. This allows for multiple pins to be configured in one command. For example, configuring GPIO pins 0 and 1 will require setting bit 0 and 1 of this 4-byte integer to 1. The resulting 4-byte integer would be: 0x0003
+
+##### GPIO Mode
+This represents the 1st byte (argB3) of Argument B of the command. The valid options are listed below:
+- MODE_ANALOG = '0'
+- MODE_OUTPUT = '1'
+- MODE_INPUT = '2'
+- MODE_ALTERNATE = '3'
 
 ## STM32CubeMX General Project Settings
 - STM32CubeMX Config File: STM32F303RE-Dongle-Firmware.ioc
@@ -138,29 +171,36 @@ This project uses the following tasks configured for Zed editor located in ".zed
     "label": "CMake: Configure",
     "command": "cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=./cmake/gcc-arm-none-eabi.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
+    "allow_concurrent_runs": true,
+    "reveal": "always"
   },
   {
     "label": "Link: Compile Commands",
     "command": "ln -sf build/compile_commands.json compile_commands.json",
     "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "reveal": "always"
   },
   {
     "label": "Build",
     "command": "cmake --build build",
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
+    "allow_concurrent_runs": true,
+    "reveal": "always"
   },
   {
     "label": "Clean",
     "command": "rm -rf build",
-    "use_new_terminal": false
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "reveal": "always"
   },
   {
     "label": "Flash MCU",
     "command": "STM32_Programmer_CLI -c port=SWD mode=UR -w build/*.elf -v -rst",
     "use_new_terminal": false,
-    "allow_concurrent_runs": false
+    "allow_concurrent_runs": true,
+    "reveal": "always"
   }
 ]
 ```

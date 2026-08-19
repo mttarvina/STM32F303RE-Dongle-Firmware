@@ -2,14 +2,12 @@
 #ifndef __TARVS_USART2_H
 #define __TARVS_USART2_H
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <sys/types.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* Includes ------------------------------------------------------------------*/
-#include <stdbool.h>
-#include <stdint.h>
 
 /* Exported macros -----------------------------------------------------------*/
 #define USART2_SERIAL_BUF_SIZE 512

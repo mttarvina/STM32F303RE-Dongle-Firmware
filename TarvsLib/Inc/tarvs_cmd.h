@@ -2,18 +2,16 @@
 #ifndef __TARVS_CMD_H
 #define __TARVS_CMD_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <sys/types.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Includes ------------------------------------------------------------------*/
-#include <stdint.h>
-#include <stdbool.h>
 
 /* Exported macros -----------------------------------------------------------*/
-#define CMD_VALID_SIZE 12
+#define CMD_VALID_BYTE_LENGTH 12
 #define CMD_ARGUMENT_SIZE 4
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
