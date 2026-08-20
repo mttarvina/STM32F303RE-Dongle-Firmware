@@ -1,69 +1,86 @@
 #include "tarvs_cmd.h"
 #include <stdint.h>
+#include <time.h>
 
-bool CMD_Parse(char *src, CMD_StructDef *cmd, uint16_t len) {
-  cmd->action = 0;
-  cmd->subject = 0;
-  cmd->param = 0;
+static uint32_t _cmd_error_state = 0;
 
-  if (len != CMD_VALID_BYTE_LENGTH) {
-    return false;
+uint32_t CMD_GetErrorState(void) { return _cmd_error_state; }
+
+void CMD_ResetErrorState(void) { _cmd_error_state = 0; }
+
+ErrorStatus CMD_Parse(const char *src, CMD_StructDef *cmd, uint16_t len) {
+  if (src == NULL || cmd == NULL) {
+    _cmd_error_state |= CMD_ERROR_NULL_PTR;
+    return ERROR;
   }
-  if (src[CMD_VALID_BYTE_LENGTH - 1] != '!') {
-    return false;
+  if (len != CMD_VALID_SIZE) {
+    _cmd_error_state |= CMD_ERROR_INVALID_SIZE;
+    return ERROR;
+  }
+  if (src[CMD_VALID_SIZE - 1] != '!') {
+    _cmd_error_state |= CMD_ERROR_INVALID_FORMAT;
+    return ERROR;
   }
 
   cmd->action = src[0];
   cmd->subject = src[1];
   cmd->param = src[2];
 
-  for (uint8_t i = 0; i < CMD_ARGUMENT_SIZE; i++) {
+  for (uint8_t i = 0; i < CMD_VALID_ARG_SIZE; i++) {
     cmd->argA[i] = src[i + 3];
   }
-  for (uint8_t i = 0; i < CMD_ARGUMENT_SIZE; i++) {
+  for (uint8_t i = 0; i < CMD_VALID_ARG_SIZE; i++) {
     cmd->argB[i] = src[i + 7];
   }
-  return true;
+
+  return SUCCESS;
 }
 
-uint16_t CMD_ArgToInt(uint8_t *arg){
-  uint8_t arg_num[CMD_ARGUMENT_SIZE] = {0};
-
-  for (uint8_t i = 0; i < CMD_ARGUMENT_SIZE; i++){\
-    // convert characters from '0' to '9'
-    if ((arg[i] >= 48) && (arg[i] <= 57)) {
-      arg_num[i] = arg[i] - 48;
-    }
-    // convert characters from 'A' to 'F'
-    else if ((arg[i] >= 65) && (arg[i] <= 70)){
-      arg_num[i] = arg[i] - 55;
-    }
-    // convert characters from 'a' to 'f'
-    else if ((arg[i] >= 97) && (arg[i] <= 102)){
-      arg_num[i] = arg[i] - 87;
-    }
-
-    // TO DO: route to error handler if argument is invalid
+ErrorStatus CMD_ArgToInt(const uint8_t *src, uint16_t *dest) {
+  if (src == NULL || dest == NULL) {
+    _cmd_error_state |= CMD_ERROR_NULL_PTR;
+    return ERROR;
   }
 
-  // First element represents the hex-byte including the MSB,
-  // Last element represents the hex-byte including the LSB
-  return ((arg_num[0] << 12) | (arg_num[1] << 8) | (arg_num[2] << 4) | arg_num[3]);
+  uint16_t _val = 0;
+  for (uint8_t i = 0; i < CMD_VALID_ARG_SIZE; i++) {
+    uint8_t _c = src[i];
+    uint8_t _digit;
+
+    if (_c >= '0' && _c <= '9') {
+      _digit = _c - '0';
+    } else if (_c >= 'A' && _c <= 'F') {
+      _digit = _c - 'A' + 10;
+    } else if (_c >= 'a' && _c <= 'f') {
+      _digit = _c - 'a' + 10;
+    } else {
+      _cmd_error_state |= CMD_ERROR_INVALID_ARGUMENT;
+      *dest = 0; // assign a safe value in case dest is uninitialized
+      return ERROR;
+    }
+    _val = (_val << 4) | _digit;
+  }
+
+  *dest = _val;
+  return SUCCESS;
 }
 
+ErrorStatus CMD_CharToInt(uint8_t src, uint8_t *dest) {
+  if (dest == NULL) {
+    _cmd_error_state |= CMD_ERROR_NULL_PTR;
+    return ERROR;
+  }
 
-uint8_t CMD_ParamToInt(uint8_t param_byte){
-  // convert characters from '0' to '9'
-  if ((param_byte >= 48) && (param_byte <= 57)) {
-    return (param_byte - 48);
+  if (src >= '0' && src <= '9') {
+    *dest = src - '0';
+  } else if (src >= 'A' && src <= 'F') {
+    *dest = src - 'A' + 10;
+  } else if (src >= 'a' && src <= 'f') {
+    *dest = src - 'a' + 10;
+  } else {
+    _cmd_error_state |= CMD_ERROR_INVALID_ARGUMENT;
+    *dest = 0xFF; // assign an invalid value in case dest is uninitialized, so other error checks can catch it later
+    return ERROR;
   }
-  // convert characters from 'A' to 'F'
-  else if ((param_byte >= 65) && (param_byte <= 70)){
-    return (param_byte - 55);
-  }
-  // convert characters from 'a' to 'f'
-  else if ((param_byte >= 97) && (param_byte <= 102)){
-    return (param_byte - 87);
-  }
-  return 255; // Assign 255 if param is invalid. This will be catched by the switch statement of the state machine
+  return SUCCESS;
 }

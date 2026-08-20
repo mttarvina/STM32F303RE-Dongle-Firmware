@@ -56,6 +56,8 @@ void USART2_SendMessage(const char *str, uint16_t len);
  */
 bool USART2_IsDataAvailable(void);
 
+bool USART2_IsCommandAvailable(void);
+
 /**
  * @brief   Read all available data from the RX buffer until a line terminator
  * is encountered

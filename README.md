@@ -205,3 +205,6 @@ This project uses the following tasks configured for Zed editor located in ".zed
 ]
 ```
 To run/trigger a specific task, we only need to click "CTRL+SHIFT+P --> task: spawn" in Zed editor.
+
+## Notes
+- Command execution delay largely depends on the serial baud rate and the amount of time it takes to transmit the command from PC to the MCU. A 14-byte transmission at 230400 baud rate takes about 608us. Once the MCU receives all 14 bytes, the delay taken by parsing the command and routing the state machine to call the appropriate function is insignificant compared to the transmission time.

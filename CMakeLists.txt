@@ -73,7 +73,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} stm32cubemx)
 # ------------------------------------------------------------------------------
 # Post-Build Steps: Generate .bin/.hex and copy all release artifacts to repo
 # ------------------------------------------------------------------------------
-set(RELEASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/firmware_bin")
+set(RELEASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Bin")
 
 add_custom_command(
     TARGET ${CMAKE_PROJECT_NAME} POST_BUILD

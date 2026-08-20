@@ -195,6 +195,7 @@ void SysTick_Handler(void) {
 void USART2_IRQHandler(void) {
   /* USER CODE BEGIN USART2_IRQn 0 */
 
+  // USER LED2 (Nucleo-F303RE) --> Used to probe and inspect execution delay
 #ifdef ENABLE_DEBUG
   LL_GPIO_TogglePin(GPIOA, LL_GPIO_PIN_5);
 #endif

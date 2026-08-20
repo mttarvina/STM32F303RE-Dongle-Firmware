@@ -1,5 +1,7 @@
-#include "tarvs_usart2.h"
 #include "stm32f3xx_ll_usart.h"
+#include "tarvs_cmd.h"
+#include "tarvs_usart2.h"
+#include <stdbool.h>
 #include <string.h>
 
 static RingBuf_TypeDef _rx_buf = {
@@ -38,6 +40,21 @@ void USART2_SendMessage(const char *str, uint16_t len) {
 }
 
 bool USART2_IsDataAvailable(void) { return (_rx_buf.head != _rx_buf.tail); }
+
+bool USART2_IsCommandAvailable(void) {
+  uint16_t available_bytes = 0;
+
+  if (_rx_buf.head >= _rx_buf.tail) {
+    available_bytes = _rx_buf.head - _rx_buf.tail;
+  } else {
+    available_bytes = USART2_SERIAL_BUF_SIZE - _rx_buf.tail + _rx_buf.head;
+  }
+  // Minimum valid frame is 12 bytes + 2 delimiter (\r\n) = 14 bytes
+  if (available_bytes < (CMD_VALID_SIZE + 2U)) {
+    return false;
+  }
+  return true;
+}
 
 uint16_t USART2_ReadMessage(char *dest, uint16_t len) {
   uint16_t i = 0;
