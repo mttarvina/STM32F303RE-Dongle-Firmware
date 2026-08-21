@@ -24,7 +24,7 @@
 #include <stdint.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "main.h"
+#include "app.h"
 #include "tarvs_usart2.h"
 /* USER CODE END Includes */
 
@@ -196,9 +196,9 @@ void USART2_IRQHandler(void) {
   /* USER CODE BEGIN USART2_IRQn 0 */
 
   // USER LED2 (Nucleo-F303RE) --> Used to probe and inspect execution delay
-#ifdef ENABLE_DEBUG
-  LL_GPIO_TogglePin(GPIOA, LL_GPIO_PIN_5);
-#endif
+  // #ifdef ENABLE_DEBUG
+  //   LL_GPIO_TogglePin(GPIOA, LL_GPIO_PIN_5);
+  // #endif
 
   if (LL_USART_IsActiveFlag_RXNE(USART2) && LL_USART_IsEnabledIT_RXNE(USART2)) {
     USART2_AppendToRXBuffer(LL_USART_ReceiveData8(USART2));

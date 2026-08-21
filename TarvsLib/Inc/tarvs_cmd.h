@@ -21,21 +21,21 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
   CMD_GET = 48,
-  CMD_SET,
-  CMD_TOGGLE,
-  CMD_START,
-  CMD_STOP,
-  CMD_CAPTURE,
-  CMD_CONFIG,
+  CMD_SET = 49,
+  CMD_TOGGLE = 50,
+  CMD_START = 51,
+  CMD_STOP = 52,
+  CMD_CAPTURE = 53,
+  CMD_CONFIG = 54,
 } CMD_Action;
 
 typedef enum {
   CMD_GPIO = 48,
-  CMD_ADC,
-  CMD_I2C,
-  CMD_SPI,
-  CMD_TIMER,
-  CMD_PWM,
+  CMD_ADC = 49,
+  CMD_I2C = 50,
+  CMD_SPI = 51,
+  CMD_TIMER = 52,
+  CMD_PWM = 53,
 } CMD_Subject;
 
 typedef struct {

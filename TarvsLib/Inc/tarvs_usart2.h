@@ -56,6 +56,12 @@ void USART2_SendMessage(const char *str, uint16_t len);
  */
 bool USART2_IsDataAvailable(void);
 
+/**
+ * @brief   Checks if there are at least 14-bytes to read in the RX buffer
+ *
+ * @param   None
+ * @retval  None
+ */
 bool USART2_IsCommandAvailable(void);
 
 /**

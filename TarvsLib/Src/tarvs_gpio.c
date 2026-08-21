@@ -15,7 +15,7 @@ static const uint32_t _gpio_rcc_clocks[] = {LL_AHB1_GRP1_PERIPH_GPIOA, LL_AHB1_G
 static const uint32_t _gpio_modes[] = {LL_GPIO_MODE_INPUT, LL_GPIO_MODE_OUTPUT, LL_GPIO_MODE_ALTERNATE,
                                        LL_GPIO_MODE_ANALOG};
 static const uint32_t _gpio_speeds[] = {LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_SPEED_FREQ_MEDIUM, LL_GPIO_SPEED_FREQ_HIGH};
-static const uint32_t _gpio_output_modes[] = {LL_GPIO_OUTPUT_PUSHPULL, LL_GPIO_OUTPUT_OPENDRAIN};
+static const uint32_t _gpio_output_types[] = {LL_GPIO_OUTPUT_PUSHPULL, LL_GPIO_OUTPUT_OPENDRAIN};
 static const uint32_t _gpio_pull_modes[] = {LL_GPIO_PULL_NO, LL_GPIO_PULL_UP, LL_GPIO_PULL_DOWN};
 
 uint32_t GPIO_GetErrorState(void) { return _gpio_error_state; }
@@ -49,7 +49,7 @@ ErrorStatus GPIO_Config(uint8_t port, uint32_t pin_mask, uint8_t mode, uint8_t s
   }
 
   // check for invalid output mode
-  if (output_mode >= ARRAY_SIZE(_gpio_output_modes)) {
+  if (output_mode >= ARRAY_SIZE(_gpio_output_types)) {
     _gpio_error_state |= GPIO_ERROR_INVALID_OUTPUT_MODE;
     return ERROR;
   }
@@ -66,7 +66,7 @@ ErrorStatus GPIO_Config(uint8_t port, uint32_t pin_mask, uint8_t mode, uint8_t s
   LL_GPIO_InitTypeDef _cfg = {.Pin = pin_mask,
                               .Mode = _gpio_modes[mode],
                               .Speed = _gpio_speeds[speed],
-                              .OutputType = _gpio_output_modes[output_mode],
+                              .OutputType = _gpio_output_types[output_mode],
                               .Pull = _gpio_pull_modes[pull_mode]};
 
   if (LL_GPIO_Init(_gpio_ports[port], &_cfg) != SUCCESS) {

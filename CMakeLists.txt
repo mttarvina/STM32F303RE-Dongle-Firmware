@@ -52,6 +52,26 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/TarvsLib/Inc
 )
 
+# ==============================================================================
+# Application Directory (App)
+# ==============================================================================
+
+# Automatically collect all C sources inside App
+file(GLOB_RECURSE APP_LIB_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/App/*.c"
+)
+
+# Add custom library source files to the project target
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    ${APP_LIB_SOURCES}
+)
+
+# Add custom library include header paths
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/
+)
+
+
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user-defined library search paths here

@@ -3,11 +3,14 @@ Firmware to access and control the STM32F303RE peripherals through Python/CLI
 
 ## Revision History
 [v0.0.1]:
-- (Clock) Fixed setting, configured for max HCLK frequency of 72MHz
-- (USART2) Uses interrupt based ring buffer for receiving commands from the PC
+- CLOCK -> Fixed setting, configured for max HCLK frequency of 72MHz
+- USART2 -> Uses interrupt based ring buffer for receiving commands from the PC
+- GPIO -> Functional and supports the following API's:
+  - CONFIG, GPIO, *gpio_port*, *pin_mask*, *mode|speed|output_type|pull-up/pull-down*
+  - 
 
 ## Overview
-This project aims to develop a custom dongle firmware for STM32F303RE micrcontroller and expose a standard API through USB serial communication to allow access and control of the MCU peripherals such as GPIO, ADC, I2C, or SPI, to high level software applications running in a PC.
+This project aims to develop a custom dongle firmware for STM32F303RE microcontroller and expose a standard API through USB serial communication to allow access and control of the MCU peripherals such as GPIO, ADC, I2C, or SPI, to high level software applications running in a PC.
 
 This project aims to showcase my capability in developing custom bare metal embedded C firmware on an STM32 microcontroller.
 
@@ -134,7 +137,7 @@ The next sections outline the list of supported commands for controlling and con
 Configuring a GPIO is done via the CONFIG command and has the following format:
 | Action | Subject | Param/Attr  | Argument A (4-bytes) | Argument B (4-bytes)        |
 |--------|---------|-------------|----------------------|-----------------------------|
-| CONFIG | GPIO    | *gpio_port* | *gpio_pin_mask*      | mode|speed|output_type|pull |
+| CONFIG | GPIO    | *gpio_port* | *gpio_pin_mask*      |*mode,speed,output_type,pull*|
 
 ##### GPIO Port Options
 This represents the 'param/attr' byte of the command. The valid options are listed below:
@@ -150,10 +153,32 @@ This is a 4-byte integer that represents the locations of the target GPIO pins a
 
 ##### GPIO Mode
 This represents the 1st byte (argB3) of Argument B of the command. The valid options are listed below:
-- MODE_ANALOG = '0'
-- MODE_OUTPUT = '1'
-- MODE_INPUT = '2'
-- MODE_ALTERNATE = '3'
+- INPUT = '0'
+- OUTPUT = '1'
+- ALTERNATE = '2'
+- ANALOG = '3'
+
+##### GPIO Speed
+This represents the 2nd byte (argB2) of Argument B of the command. The valid options are listed below:
+- LOW = '0'
+- MEDIUM = '1'
+- HIGH = '2'
+
+##### GPIO Output Type
+This represents the 3rd byte (argB1) of Argument B of the command. The valid options are listed below:
+- PUSH-PULL = '0'
+- OPEN-DRAIN = '1'
+
+##### GPIO Pull-up/Pull-down Setting
+This represents the 4th byte (argB0) of Argument B of the command. The valid options are listed below:
+- NONE = '0'
+- PULL-UP = '1'
+- PULL-DOWN = '2'
+
+##### Example
+- Configure PA6 of SMT32F303RE as OUTPUT, PUSH-PULL, no pull-up/pull-down, and GPIO speed = HIGH.
+  - [CONFIG, GPIO, GPIOA, 0x0040, OUTPUT, HIGH, PUSH-PULL, NONE, "!"]
+  - Command string --> **"60000401200!\r\n"**
 
 ## STM32CubeMX General Project Settings
 - STM32CubeMX Config File: STM32F303RE-Dongle-Firmware.ioc
@@ -207,4 +232,7 @@ This project uses the following tasks configured for Zed editor located in ".zed
 To run/trigger a specific task, we only need to click "CTRL+SHIFT+P --> task: spawn" in Zed editor.
 
 ## Notes
-- Command execution delay largely depends on the serial baud rate and the amount of time it takes to transmit the command from PC to the MCU. A 14-byte transmission at 230400 baud rate takes about 608us. Once the MCU receives all 14 bytes, the delay taken by parsing the command and routing the state machine to call the appropriate function is insignificant compared to the transmission time.
+- Command execution delay largely depends on the serial baud rate and the amount of time it takes to transmit the command from PC to the MCU.
+- Using two line terminators ("\r\n"), every command transmits 14 bytes --> 14 * (8 bits + 1 start bit + 1 stop bit) = 140 bits
+- At 230400 baud rate, the transmission time is: 140 bits / (230400 bits/s) --> ~608us
+- Once the MCU receives all 14 bytes, the delay taken by parsing the command and routing the state machine to execute the command is insignificant compared to the transmission time.
