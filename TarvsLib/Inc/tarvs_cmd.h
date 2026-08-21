@@ -20,8 +20,8 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
-  CMD_GET = 48,
-  CMD_SET = 49,
+  CMD_READ = 48,
+  CMD_WRITE = 49,
   CMD_TOGGLE = 50,
   CMD_START = 51,
   CMD_STOP = 52,

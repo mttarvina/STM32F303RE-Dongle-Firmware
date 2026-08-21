@@ -22,7 +22,7 @@ uint32_t GPIO_GetErrorState(void) { return _gpio_error_state; }
 
 void GPIO_ResetErrorState(void) { _gpio_error_state = 0; }
 
-ErrorStatus GPIO_Config(uint8_t port, uint32_t pin_mask, uint8_t mode, uint8_t speed, uint8_t output_mode,
+ErrorStatus GPIO_Config(uint8_t port, uint32_t pin_mask, uint8_t mode, uint8_t speed, uint8_t output_type,
                         uint8_t pull_mode) {
   // check for invalid port
   if (port >= ARRAY_SIZE(_gpio_ports)) {
@@ -49,8 +49,8 @@ ErrorStatus GPIO_Config(uint8_t port, uint32_t pin_mask, uint8_t mode, uint8_t s
   }
 
   // check for invalid output mode
-  if (output_mode >= ARRAY_SIZE(_gpio_output_types)) {
-    _gpio_error_state |= GPIO_ERROR_INVALID_OUTPUT_MODE;
+  if (output_type >= ARRAY_SIZE(_gpio_output_types)) {
+    _gpio_error_state |= GPIO_ERROR_INVALID_OUTPUT_TYPE;
     return ERROR;
   }
 
@@ -66,7 +66,7 @@ ErrorStatus GPIO_Config(uint8_t port, uint32_t pin_mask, uint8_t mode, uint8_t s
   LL_GPIO_InitTypeDef _cfg = {.Pin = pin_mask,
                               .Mode = _gpio_modes[mode],
                               .Speed = _gpio_speeds[speed],
-                              .OutputType = _gpio_output_types[output_mode],
+                              .OutputType = _gpio_output_types[output_type],
                               .Pull = _gpio_pull_modes[pull_mode]};
 
   if (LL_GPIO_Init(_gpio_ports[port], &_cfg) != SUCCESS) {
@@ -102,14 +102,14 @@ ErrorStatus GPIO_GetPinState(uint8_t port, uint32_t pin, GPIO_PinStateDef *pin_s
   uint32_t _mask_2bit = 0x3U << _shift_2bit;
 
   pin_state->mode = (uint8_t)((READ_REG(_gpio_ports[port]->MODER) & _mask_2bit) >> _shift_2bit);
-  pin_state->output_mode = (uint8_t)((READ_REG(_gpio_ports[port]->OTYPER) >> _pnum) & 0x1U);
+  pin_state->output_type = (uint8_t)((READ_REG(_gpio_ports[port]->OTYPER) >> _pnum) & 0x1U);
   pin_state->speed = (uint8_t)((READ_REG(_gpio_ports[port]->OSPEEDR) & _mask_2bit) >> _shift_2bit);
   pin_state->pull_mode = (uint8_t)((READ_REG(_gpio_ports[port]->PUPDR) & _mask_2bit) >> _shift_2bit);
 
   return SUCCESS;
 }
 
-ErrorStatus GPIO_SetPin(uint8_t port, uint32_t pin_mask, uint8_t level) {
+ErrorStatus GPIO_Write(uint8_t port, uint32_t pin_mask, uint8_t level) {
   // check for invalid port
   if (port >= ARRAY_SIZE(_gpio_ports)) {
     _gpio_error_state |= GPIO_ERROR_INVALID_PORT;
@@ -133,7 +133,7 @@ ErrorStatus GPIO_SetPin(uint8_t port, uint32_t pin_mask, uint8_t level) {
   return SUCCESS;
 }
 
-ErrorStatus GPIO_TogglePin(uint8_t port, uint32_t pin_mask) {
+ErrorStatus GPIO_Toggle(uint8_t port, uint32_t pin_mask) {
   // check for invalid port
   if (port >= ARRAY_SIZE(_gpio_ports)) {
     _gpio_error_state |= GPIO_ERROR_INVALID_PORT;
@@ -148,5 +148,28 @@ ErrorStatus GPIO_TogglePin(uint8_t port, uint32_t pin_mask) {
 
   // toggle using ODR register
   _gpio_ports[port]->ODR ^= pin_mask;
+  return SUCCESS;
+}
+
+ErrorStatus GPIO_Read(uint8_t port, uint32_t pin_mask, uint16_t *pin_states) {
+  // check for null pointer
+  if (pin_states == NULL) {
+    _gpio_error_state |= GPIO_ERROR_NULL_PTR;
+    return ERROR;
+  }
+
+  // check for invalid port
+  if (port >= ARRAY_SIZE(_gpio_ports)) {
+    _gpio_error_state |= GPIO_ERROR_INVALID_PORT;
+    return ERROR;
+  }
+
+  // check for invalid pin mask
+  if ((pin_mask == 0) || (pin_mask > 0xFFFF)) {
+    _gpio_error_state |= GPIO_ERROR_INVALID_PIN;
+    return ERROR;
+  }
+
+  *pin_states = (uint16_t)(_gpio_ports[port]->IDR & pin_mask);
   return SUCCESS;
 }

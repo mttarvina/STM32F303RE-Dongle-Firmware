@@ -4,10 +4,12 @@ Firmware to access and control the STM32F303RE peripherals through Python/CLI
 ## Revision History
 [v0.0.1]:
 - CLOCK -> Fixed setting, configured for max HCLK frequency of 72MHz
-- USART2 -> Uses interrupt based ring buffer for receiving commands from the PC
+- USART2 -> Dedicated interface for PC communication. Uses interrupt based ring buffer for receiving commands.
 - GPIO -> Functional and supports the following API's:
   - CONFIG, GPIO, *gpio_port*, *pin_mask*, *mode|speed|output_type|pull-up/pull-down*
-  - 
+  - WRITE, GPIO, *gpio_port*, *pin_mask*, *level*"000"
+  - TOGGLE, GPIO, *gpio_port*, *pin_mask*, "0000"
+  - READ, GPIO, *gpio_port*, *pin_mask*, "0000"
 
 ## Overview
 This project aims to develop a custom dongle firmware for STM32F303RE microcontroller and expose a standard API through USB serial communication to allow access and control of the MCU peripherals such as GPIO, ADC, I2C, or SPI, to high level software applications running in a PC.
@@ -96,8 +98,8 @@ The MCU accepts a formatted command composed of a fized array of 12 bytes. The f
 ['action', 'subject', 'param/attr', 'argA3', 'argA2', 'argA1', 'argA0', 'argB3', 'argB2', 'argB1', 'argB0', '!']
 ```
 
-This was designed so that the a command roughly translates to a comprehensible english statement such as "SET the GPIO at port GPIOA pins 5 & 6 to HIGH" where:
-- SET represents the "action"
+This was designed so that the a command roughly translates to a comprehensible english statement such as "WRITE to GPIO at port GPIOA pins 5 & 6 to HIGH" where:
+- WRITE represents the "action"
 - GPIO represents the "subject"
 - Port GPIOA represents the "param/attr"
 - Pins 5 & 6 represents the value for "argA"
@@ -111,8 +113,8 @@ The last byte "!" signals the end of the command and is required for the MCU to 
 The first byte of the valid command represents the intended "action" and has the following options:
 | Action   | Char Representation | Integer Equivalent |
 |----------|---------------------|--------------------|
-| GET      | '0'                 | 48                 |
-| SET      | '1'                 | 49                 |
+| READ     | '0'                 | 48                 |
+| WRITE    | '1'                 | 49                 |
 | TOGGLE   | '2'                 | 50                 |
 | START    | '3'                 | 51                 |
 | STOP     | '4'                 | 52                 |
@@ -137,7 +139,7 @@ The next sections outline the list of supported commands for controlling and con
 Configuring a GPIO is done via the CONFIG command and has the following format:
 | Action | Subject | Param/Attr  | Argument A (4-bytes) | Argument B (4-bytes)        |
 |--------|---------|-------------|----------------------|-----------------------------|
-| CONFIG | GPIO    | *gpio_port* | *gpio_pin_mask*      |*mode,speed,output_type,pull*|
+| CONFIG | GPIO    | *gpio_port* | *pin_mask*           |*mode,speed,output_type,pull*|
 
 ##### GPIO Port Options
 This represents the 'param/attr' byte of the command. The valid options are listed below:
@@ -176,9 +178,70 @@ This represents the 4th byte (argB0) of Argument B of the command. The valid opt
 - PULL-DOWN = '2'
 
 ##### Example
-- Configure PA6 of SMT32F303RE as OUTPUT, PUSH-PULL, no pull-up/pull-down, and GPIO speed = HIGH.
+- Configure PA6 as OUTPUT, PUSH-PULL, no pull-up/pull-down, and GPIO speed = HIGH.
   - [CONFIG, GPIO, GPIOA, 0x0040, OUTPUT, HIGH, PUSH-PULL, NONE, "!"]
   - Command string --> **"60000401200!\r\n"**
+
+#### Writing to one or multiple GPIO pins
+Writing to one or multiple GPIO pins is done via the WRITE command and has the following format:
+| Action | Subject | Param/Attr  | Argument A (4-bytes) | Argument B (Bit 3)| Argument B (Bits 2-0) |
+|--------|---------|-------------|----------------------|-------------------|-----------------------|
+| WRITE  | GPIO    | *gpio_port* | *pin_mask*           | *level*           | "000"                 |
+
+##### GPIO Port Options
+Please refer to the *Configuring a GPIO pin* section
+
+##### GPIO Pin Mask
+Please refer to the *Configuring a GPIO pin* section
+
+##### GPIO Level
+This represents intended output state of one or multiple GPIO pins. The valid options are as listed below:
+- LOW = '0'
+- HIGH = '1'
+
+##### Example
+- Set PA6 as output HIGH.
+  - [WRITE, GPIO, GPIOA, 0x0040, HIGH, "000", "!"]
+  - Command string --> **"20000401000!\r\n"**
+
+#### Toggle the output of one or multiple GPIO pins
+Toggling the output state of one or multiple GPIO pins is done via the TOGGLE command and has the following format:
+| Action | Subject | Param/Attr  | Argument A (4-bytes) | Argument B (4-bytes)|
+|--------|---------|-------------|----------------------|---------------------|
+| TOGGLE | GPIO    | *gpio_port* | *pin_mask*           | "0000"              |
+
+##### GPIO Port Options
+Please refer to the *Configuring a GPIO pin* section
+
+##### GPIO Pin Mask
+Please refer to the *Configuring a GPIO pin* section
+
+##### Example
+- Toggle PA6 of SMT32F303RE.
+  - [TOGGLE, GPIO, GPIOA, 0x0040, "0000", "!"]
+  - Command string --> **"20000400000!\r\n"**
+
+#### Read input state of one or multiple GPIO pins
+Reading the input state of one or multiple GPIO pins is done via the READ command and has the following format:
+| Action | Subject | Param/Attr  | Argument A (4-bytes) | Argument B (4-bytes)|
+|--------|---------|-------------|----------------------|---------------------|
+| READ   | GPIO    | *gpio_port* | *pin_mask*           | "0000"              |
+
+##### GPIO Port Options
+Please refer to the *Configuring a GPIO pin* section
+
+##### GPIO Pin Mask
+Please refer to the *Configuring a GPIO pin* section
+
+##### MCU Response
+The response string represents a 16-bit unsigned integer where each bit corresponds to the input level/state of the corresponding pin.
+- Example: a response of "64\r\n" means that a HIGH level signal is present on pin #6 of the GPIO port, and LOW for the other pins.
+- Example: a response of "65r\n" means that a HIGH level signal is present on both pin #6 and pin #0 of the GPIO port, and LOW for the other pins.
+
+##### Example
+- Read input pin state of PA6.
+  - [READ, GPIO, GPIOA, 0x0040, "0000", "!"]
+  - Command string --> **"00000400000!\r\n"**
 
 ## STM32CubeMX General Project Settings
 - STM32CubeMX Config File: STM32F303RE-Dongle-Firmware.ioc
@@ -236,3 +299,6 @@ To run/trigger a specific task, we only need to click "CTRL+SHIFT+P --> task: sp
 - Using two line terminators ("\r\n"), every command transmits 14 bytes --> 14 * (8 bits + 1 start bit + 1 stop bit) = 140 bits
 - At 230400 baud rate, the transmission time is: 140 bits / (230400 bits/s) --> ~608us
 - Once the MCU receives all 14 bytes, the delay taken by parsing the command and routing the state machine to execute the command is insignificant compared to the transmission time.
+
+## Known Issues
+- "CMD=?;ERR=2" (CMD_ERROR_INVALID_SIZE) appears intermittently during READ GPIO command - tested at 200ms and 500ms command interval

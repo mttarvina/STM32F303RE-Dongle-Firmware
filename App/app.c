@@ -35,13 +35,13 @@ void APP_SendErrorMessage(uint8_t module) {
   switch (module) {
   case MODULE_CMD:
     err = CMD_GetErrorState();
-    usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, ":CMD=?;ERR=%lu\r\n", err);
+    usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, "CMD=?;ERR=%lu\r\n", err);
     USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
     CMD_ResetErrorState();
     break;
   case MODULE_GPIO:
     err = GPIO_GetErrorState();
-    usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, ":GPIO=?;ERR=%lu\r\n", err);
+    usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, "GPIO=?;ERR=%lu\r\n", err);
     USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
     GPIO_ResetErrorState();
     break;
@@ -68,18 +68,29 @@ void APP_Main(void) {
       // #endif
       if (CMD_Parse(usart2_rx_msg, &serial_cmd, usart2_rx_bytes) == SUCCESS) {
         switch (serial_cmd.action) {
-        case CMD_GET:
-          break;
-        case CMD_SET:
+        case CMD_READ:
           if (serial_cmd.subject == CMD_GPIO) {
-            // Format: [SET, GPIO, <port>, <pin_mask[4]>, <level>, '0', '0', '0', '!']
-            // Example: Set GPIO, port GPIOA, pin #6, to HIGH --> "10000401000!\r\n"
+            // Format: [READ, GPIO, <port>, <pin_mask[4]>, '0', '0', '0', '0', '!']
+            // Example: READ from GPIO, port GPIO, pin #6 --> "00000400000!\r\n"
+            uint8_t port;
+            uint16_t pins, pin_states;
+            APP_ErrorCheck(CMD_CharToInt(serial_cmd.param, &port), MODULE_CMD);
+            APP_ErrorCheck(CMD_ArgToInt(serial_cmd.argA, &pins), MODULE_CMD);
+            APP_ErrorCheck(GPIO_Read(port, pins, &pin_states), MODULE_GPIO);
+            usart2_tx_bytes = snprintf(usart2_tx_msg, USART2_SERIAL_BUF_SIZE, "%d\r\n", pin_states);
+            USART2_SendMessage(usart2_tx_msg, usart2_tx_bytes);
+          }
+          break;
+        case CMD_WRITE:
+          if (serial_cmd.subject == CMD_GPIO) {
+            // Format: [WRITE, GPIO, <port>, <pin_mask[4]>, <level>, '0', '0', '0', '!']
+            // Example: WRITE to GPIO, port GPIOA, pin #6, to HIGH --> "10000401000!\r\n"
             uint8_t port, level;
             uint16_t pins;
             APP_ErrorCheck(CMD_CharToInt(serial_cmd.param, &port), MODULE_CMD);
             APP_ErrorCheck(CMD_ArgToInt(serial_cmd.argA, &pins), MODULE_CMD);
             APP_ErrorCheck(CMD_CharToInt(serial_cmd.argB[0], &level), MODULE_CMD);
-            APP_ErrorCheck(GPIO_SetPin(port, pins, level), MODULE_GPIO);
+            APP_ErrorCheck(GPIO_Write(port, pins, level), MODULE_GPIO);
           }
           break;
         case CMD_TOGGLE:
@@ -90,7 +101,7 @@ void APP_Main(void) {
             uint16_t pins;
             APP_ErrorCheck(CMD_CharToInt(serial_cmd.param, &port), MODULE_CMD);
             APP_ErrorCheck(CMD_ArgToInt(serial_cmd.argA, &pins), MODULE_CMD);
-            APP_ErrorCheck(GPIO_TogglePin(port, pins), MODULE_GPIO);
+            APP_ErrorCheck(GPIO_Toggle(port, pins), MODULE_GPIO);
           }
           break;
         case CMD_START:
