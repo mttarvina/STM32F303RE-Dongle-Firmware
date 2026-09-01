@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 /* Exported macros -----------------------------------------------------------*/
-#define USART2_SERIAL_BUF_SIZE 512
+#define USART2_SERIAL_BUF_SIZE 256
 #define USART2_SERIAL_BUF_MASK (USART2_SERIAL_BUF_SIZE - 1)
 
 /* Exported types ------------------------------------------------------------*/
@@ -42,11 +42,11 @@ void USART2_AppendToRXBuffer(uint8_t data);
 /**
  * @brief   Send each character of the array to USART2 TX one by one
  *
- * @param   str - pointer to char array
+ * @param   data - pointer to char array
  * @param   len - number of bytes/characters to be sent
  * @retval  None
  */
-void USART2_SendMessage(const char *str, uint16_t len);
+void USART2_SendMessage(const uint8_t *data, uint16_t len);
 
 /**
  * @brief   Check if unread data is currently available in the RX buffer

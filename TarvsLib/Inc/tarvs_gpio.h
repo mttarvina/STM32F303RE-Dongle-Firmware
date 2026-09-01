@@ -3,7 +3,6 @@
 #define __TARVS_GPIO_H
 
 #include "stm32f3xx.h"
-#include <stdbool.h>
 #include <stdint.h>
 #include <sys/types.h>
 #ifdef __cplusplus

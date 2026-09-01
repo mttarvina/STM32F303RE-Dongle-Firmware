@@ -12,6 +12,8 @@ extern "C" {
 #define MODULE_CMD 0
 #define MODULE_USART2 1
 #define MODULE_GPIO 2
+#define MODULE_SPI 3
+#define MODULE_BUFFER 4
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported variables --------------------------------------------------------*/

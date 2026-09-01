@@ -2,6 +2,7 @@
 #include "tarvs_cmd.h"
 #include "tarvs_usart2.h"
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 static RingBuf_TypeDef _rx_buf = {
@@ -29,11 +30,11 @@ void USART2_AppendToRXBuffer(uint8_t data) {
   _rx_buf.head = next_head;
 }
 
-void USART2_SendMessage(const char *str, uint16_t len) {
+void USART2_SendMessage(const uint8_t *data, uint16_t len) {
   for (uint16_t i = 0; i < len; i++) {
     while (!LL_USART_IsActiveFlag_TXE(USART2))
       ; // Wait until TX data register is empty
-    LL_USART_TransmitData8(USART2, (uint16_t)str[i]);
+    LL_USART_TransmitData8(USART2, (uint16_t)data[i]);
   }
   while (!LL_USART_IsActiveFlag_TC(USART2))
     ; // Wait for Transmission Complete

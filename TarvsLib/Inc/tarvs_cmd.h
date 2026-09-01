@@ -14,19 +14,27 @@ extern "C" {
 #define CMD_VALID_SIZE 12
 #define CMD_VALID_ARG_SIZE 4
 #define CMD_ERROR_NULL_PTR (0x1 << 0)
-#define CMD_ERROR_INVALID_SIZE (0x1 << 1)
-#define CMD_ERROR_INVALID_FORMAT (0x1 << 2)
-#define CMD_ERROR_INVALID_ARGUMENT (0x1 << 3)
+#define CMD_ERROR_UNKNOWN_COMMAND (0x1 << 1)
+#define CMD_ERROR_INVALID_SIZE (0x1 << 2)
+#define CMD_ERROR_INVALID_FORMAT (0x1 << 3)
+#define CMD_ERROR_INVALID_ACTION (0x1 << 4)
+#define CMD_ERROR_INVALID_SUBJECT (0x1 << 5)
+#define CMD_ERROR_INVALID_PARAM (0x1 << 6)
+#define CMD_ERROR_INVALID_ARGUMENT (0x1 << 7)
+#define CMD_ERROR_NOT_SUPPORTED (0x1 << 8)
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
   CMD_READ = 48,
   CMD_WRITE = 49,
-  CMD_TOGGLE = 50,
-  CMD_START = 51,
-  CMD_STOP = 52,
-  CMD_CAPTURE = 53,
-  CMD_CONFIG = 54,
+  CMD_APPEND = 50,
+  CMD_TOGGLE = 51,
+  CMD_START = 52,
+  CMD_STOP = 53,
+  CMD_CAPTURE = 54,
+  CMD_CONFIG = 55,
+  CMD_INIT = 56,
+  CMD_RESET = 57,
 } CMD_Action;
 
 typedef enum {
@@ -34,8 +42,10 @@ typedef enum {
   CMD_ADC = 49,
   CMD_I2C = 50,
   CMD_SPI = 51,
-  CMD_TIMER = 52,
-  CMD_PWM = 53,
+  CMD_SPI_CSN = 52,
+  CMD_BUFFER = 53,
+  CMD_TIMER = 54,
+  CMD_PWM = 55,
 } CMD_Subject;
 
 typedef struct {
@@ -64,6 +74,54 @@ uint32_t CMD_GetErrorState(void);
  * @retval  None
  */
 void CMD_ResetErrorState(void);
+
+/**
+ * @brief   Set the CMD error bit for unknown command
+ *
+ * @param   None
+ * @retval  None
+ */
+void CMD_RaiseUnknownError(void);
+
+/**
+ * @brief   Set the CMD error bit for invalid action
+ *
+ * @param   None
+ * @retval  None
+ */
+void CMD_RaiseInvalidActionError(void);
+
+/**
+ * @brief   Set the CMD error bit for invalid subject
+ *
+ * @param   None
+ * @retval  None
+ */
+void CMD_RaiseInvalidSubjectError(void);
+
+/**
+ * @brief   Set the CMD error bit for invalid parameter
+ *
+ * @param   None
+ * @retval  None
+ */
+void CMD_RaiseInvalidParamError(void);
+
+/**
+ * @brief   Set the CMD error bit for invalid argument
+ *
+ * @param   None
+ * @retval  None
+ */
+void CMD_RaiseInvalidArgumentError(void);
+
+/**
+ * @brief   Set the CMD error bit for not supported command
+ *
+ * @param   None
+ * @retval  None
+ */
+void CMD_RaiseNotSupportedError(void);
 
 /**
  * @brief   Parse an array of bytes/characters and convert them into a structured command format

@@ -1,3 +1,4 @@
+#include "stm32f3xx.h"
 #include "tarvs_cmd.h"
 #include <stdint.h>
 #include <time.h>
@@ -7,6 +8,18 @@ static uint32_t _cmd_error_state = 0;
 uint32_t CMD_GetErrorState(void) { return _cmd_error_state; }
 
 void CMD_ResetErrorState(void) { _cmd_error_state = 0; }
+
+void CMD_RaiseUnknownError(void) { _cmd_error_state |= CMD_ERROR_UNKNOWN_COMMAND; }
+
+void CMD_RaiseInvalidActionError(void) { _cmd_error_state |= CMD_ERROR_INVALID_ACTION; }
+
+void CMD_RaiseInvalidSubjectError(void) { _cmd_error_state |= CMD_ERROR_INVALID_SUBJECT; }
+
+void CMD_RaiseInvalidParamError(void) { _cmd_error_state |= CMD_ERROR_INVALID_PARAM; }
+
+void CMD_RaiseInvalidArgumentError(void) { _cmd_error_state |= CMD_ERROR_INVALID_ARGUMENT; }
+
+void CMD_RaiseNotSupportedError(void) { _cmd_error_state |= CMD_ERROR_NOT_SUPPORTED; }
 
 ErrorStatus CMD_Parse(const char *src, CMD_StructDef *cmd, uint16_t len) {
   if (src == NULL || cmd == NULL) {
